@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Breed Selector by Asmit</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px;
+        }
+        .buttons-section { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 10px; 
+        }
+        .buttons-section button, 
+        .buttons-section label { 
+            margin-bottom: 10px; 
+            padding: 10px 20px;
+            border: 1px solid #010101;
+            background-color: #a899a0;
+            cursor: pointer;
+        }
+        .buttons-section label { 
+            display: flex; 
+            align-items: center; 
+        }
+        .buttons-section input[type="radio"] { 
+            margin-right: 5px; 
+        }
+        .input-section { 
+            margin-top: 20px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+        }
+        .input-section label {
+            font-weight: bold;
+        }
+        #asmitOutput { 
+            margin-top: 20px; 
+            border-top: 1px solid #ffffff; 
+            padding-top: 20px; 
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Choose Your Perfect Cat Breed</h1>
+
+    <div class="buttons-section">
+        <button onclick="asmitShowAllBreeds()">All Names</button>
+        <button onclick="asmitDisplayWeights()">Weight</button>
+        <label>
+            <input type="radio" name="asmitUnit" value="imperial" checked> Imperial
+        </label>
+        <label>
+            <input type="radio" name="asmitUnit" value="metric"> Metric
+        </label>
+        <button onclick="asmitShowIntelligenceFriendliness()">Intelligence - Friendly</button>
+        <button onclick="asmitCalcAvgIntelligence()">Average Intelligence</button>
+        <button onclick="asmitCalcChildFriendlyIntelligence()">Average Intelligence for Child Friendly</button>
+    </div>
+
+    <div class="input-section">
+        <label for="asmitHealth">Health Issues:</label>
+        <input type="text" id="asmitHealth" pattern="\d*">
+        <button onclick="asmitFilterByHealth()">Filter by Health Issue</button>
+    </div>
+
+    <div id="asmitOutput"><!-- All Results should be displayed here --></div>
+
+    <script>
+        const asmitCatApiUrl = 'https://api.thecatapi.com/v1/breeds';
+
+        function asmitShowAllBreeds() {
+            const asmitOutputElement = document.getElementById('asmitOutput');
+            asmitOutputElement.innerHTML = "";
+
+            fetch(asmitCatApiUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error('Something went wrong.');
+                    return response.json();
+                })
+                .then(data => {
+                    data.forEach(asmitBreed => {
+                        const asmitBr = document.createElement('br');
+                        asmitOutputElement.appendChild(document.createTextNode(asmitBreed.name));
+                        asmitOutputElement.appendChild(asmitBr);
+                    });
+                })
+                .catch(error => { console.error('Error fetching JSON:', error); });
+        }
+
+        function asmitFilterByHealth() {
+            const asmitOutputElement = document.getElementById('asmitOutput');
+            asmitOutputElement.innerHTML = "";
+            const asmitHealth = document.getElementById('asmitHealth').value;
+
+            if (!asmitHealth) {
+                alert('Please enter a health issue number.');
+                return;
+            }
+
+            fetch(asmitCatApiUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error('Something went wrong.');
+                    return response.json();
+                })
+                .then(data => {
+                    const asmitFilteredBreeds = data.filter(asmitBreed => asmitBreed.health_issues == asmitHealth);
+                    if (asmitFilteredBreeds.length === 0) {
+                        asmitOutputElement.appendChild(document.createTextNode("No breeds match this health issue."));
+                    } else {
+                        asmitFilteredBreeds.forEach(asmitBreed => {
+                            const asmitBr = document.createElement('br');
+                            asmitOutputElement.appendChild(document.createTextNode(asmitBreed.name));
+                            asmitOutputElement.appendChild(asmitBr);
+                        });
+                    }
+                })
+                .catch(error => { console.error('Error fetching JSON:', error); });
+        }
+
+        function asmitDisplayWeights() {
+            const asmitOutputElement = document.getElementById('asmitOutput');
+            asmitOutputElement.innerHTML = "";
+            const asmitUnit = document.querySelector('input[name="asmitUnit"]:checked').value;
+
+            fetch(asmitCatApiUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error('Something went wrong.');
+                    return response.json();
+                })
+                .then(data => {
+                    data.forEach(asmitBreed => {
+                        const asmitBr = document.createElement('br');
+                        const asmitWeight = asmitUnit === 'metric' ? asmitBreed.weight.metric : asmitBreed.weight.imperial;
+                        asmitOutputElement.appendChild(document.createTextNode(`${asmitBreed.name}: ${asmitWeight} ${asmitUnit}`));
+                        asmitOutputElement.appendChild(asmitBr);
+                    });
+                })
+                .catch(error => { console.error('Error fetching JSON:', error); });
+        }
+
+        function asmitShowIntelligenceFriendliness() {
+            const asmitOutputElement = document.getElementById('asmitOutput');
+            asmitOutputElement.innerHTML = "";
+
+            fetch(asmitCatApiUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error('Something went wrong.');
+                    return response.json();
+                })
+                .then(data => {
+                    data.forEach(asmitBreed => {
+                        const asmitBr = document.createElement('br');
+                        asmitOutputElement.appendChild(document.createTextNode(`${asmitBreed.name} - I: ${asmitBreed.intelligence}, F: ${asmitBreed.child_friendly}`));
+                        asmitOutputElement.appendChild(asmitBr);
+                    });
+                })
+                .catch(error => { console.error('Error fetching JSON:', error); });
+        }
+
+        function asmitCalcAvgIntelligence() {
+            const asmitOutputElement = document.getElementById('asmitOutput');
+            asmitOutputElement.innerHTML = "";
+
+            fetch(asmitCatApiUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error('Something went wrong.');
+                    return response.json();
+                })
+                .then(data => {
+                    const asmitTotalIntelligence = data.reduce((sum, asmitBreed) => sum + asmitBreed.intelligence, 0);
+                    const asmitAvgIntelligence = asmitTotalIntelligence / data.length;
+                    asmitOutputElement.appendChild(document.createTextNode(`Average Intelligence: ${asmitAvgIntelligence.toFixed(2)}`));
+                })
+                .catch(error => { console.error('Error fetching JSON:', error); });
+        }
+
+        function asmitCalcChildFriendlyIntelligence() {
+            const asmitOutputElement = document.getElementById('asmitOutput');
+            asmitOutputElement.innerHTML = "";
+
+            fetch(asmitCatApiUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error('Something went wrong.');
+                    return response.json();
+                })
+                .then(data => {
+                    const asmitChildFriendlyBreeds = data.filter(asmitBreed => asmitBreed.child_friendly > 3);
+                    const asmitTotalIntelligence = asmitChildFriendlyBreeds.reduce((sum, asmitBreed) => sum + asmitBreed.intelligence, 0);
+                    const asmitAvgIntelligence = asmitTotalIntelligence / asmitChildFriendlyBreeds.length;
+                    asmitOutputElement.appendChild(document.createTextNode(`Average Intelligence for Child Friendly Cats: ${asmitAvgIntelligence.toFixed(2)}`));
+                })
+                .catch(error => { console.error('Error fetching JSON:', error); });
+        }
+    </script>
+    
+</body>
+</html>
